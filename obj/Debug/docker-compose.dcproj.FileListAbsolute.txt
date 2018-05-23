@@ -1,0 +1,2 @@
+c:\users\otimucin\documents\visual studio 2017\Projects\ConfigurationProject\obj\Debug\docker-compose.dcproj.CoreCompileInputs.cache
+D:\myprojects\obj\Debug\docker-compose.dcproj.CoreCompileInputs.cache

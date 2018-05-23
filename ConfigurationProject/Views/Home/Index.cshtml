@@ -1,0 +1,182 @@
+﻿@model List<ConfigurationProject.Data.Model.Configuration>
+@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="container">
+    <h2>Configuration Records</h2>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="clearTextBox();">Yeni Kayıt Ekle</button><br /><br />
+    <table class="table table-bordered table-hover">
+        <thead>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Type</td>
+            <td>Value</td>
+            <td>IsActive</td>
+            <td>ApplicationName</td>
+            <td>Action</td>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Type</td>
+                <td>@item.Value</td>
+                <td>@item.IsActive</td>
+                <td>@item.ApplicationName</td>
+                <td><button id="btn2" type="button" onclick="DeleteData('@item.Id');" class="btn  btn-default">Delete <i class="glyphicon glyphicon-trash"></i></button>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="FillBoxes('@item.Id');">Güncelle</button>
+                </td>
+            </tr>
+        }
+        </thead>
+    </table>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                @*<button type="button" class="close" data-dissmiss="modal"><span aria-hidden="true">×</span></button>*@
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 class="modal-title" id="myModalLabel">Kayıt Ekle</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="ConfigurationId">ID</label>
+                        <input type="text" class="form-control" id="ConfigurationId" placeholder="Id" disabled="disabled" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Name">Name</label>
+                        <input type="text" class="form-control" id="Name" placeholder="Name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Type">Type</label>
+                        <input type="text" class="form-control" id="Type" placeholder="Type" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Value">Value</label>
+                        <input type="text" class="form-control" id="Value" placeholder="Value" />
+                    </div>
+                    <div class="form-group">
+                        <label for="IsActive">IsActive</label>
+                        <input type="text" class="form-control" id="IsActive" placeholder="IsActive" />
+                    </div>
+                    <div class="form-group">
+                        <label for="ApplicationName">ApplicationName</label>
+                        <input type="text" class="form-control" id="ApplicationName" placeholder="ApplicationName" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnAdd" onclick="return Add();">Add</button>
+                <button type="button" class="btn btn-primary" id="btnUpdate" style="display:none;" onclick="Update();">Güncelle</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function FillBoxes(_id) {
+        $('#btnAdd').hide();
+        $('#btnUpdate').show();
+        var data = {
+            id: _id
+        };
+        $.ajax({
+            url: '@Url.Content("~/")' + "Configuration/GetValueById",
+            data: JSON.stringify(data),
+            type: "POST",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                $('#ConfigurationId').val(_id);
+                $('#Name').val(data["name"]);
+                $('#Type').val(data["type"]);
+                $('#Value').val(data["value"]);
+                $('#IsActive').val(data["isActive"]);
+                $('#ApplicationName').val(data["applicationName"]);
+            },
+            error: function (err) {
+            }
+        });
+    }
+    function Update() {
+        var id = $('#ConfigurationId').val();
+        var name = $('#Name').val();
+        var type = $('#Type').val();
+        var value = $('#Value').val();
+        var isActive = $('#IsActive').val();
+        var applicationName = $('#ApplicationName').val();
+        var _data = {
+            MongoId: id,
+            Name: name,
+            Type: type,
+            Value: value,
+            IsActive: isActive,
+            ApplicationName: applicationName
+        }
+        $.ajax({
+            url: '@Url.Content("~/")' + "Configuration/UpdateValue",
+            data: JSON.stringify(_data),
+            type: "PUT",
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            success: function (result) {
+                return location.reload();
+            },
+            error: function (errormessage) {
+                alert(errormessage.responseText);
+            }
+        });
+    }
+    function DeleteData(ConfigurationId)
+    {
+        if (confirm("Kaydı silmek istediğinize emin misiniz ?"))
+        {
+            Delete(ConfigurationId);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    function Delete(ConfigurationId)
+    {
+        var _url = '@Url.Content("~/")' + "Configuration/DeleteValue";
+        $.ajax({
+            url: _url + '?' + $.param({ "id": ConfigurationId }),
+            type: 'DELETE',
+            success: function(data) {
+                location.reload();
+            }
+        });
+    }
+    function Add() {
+        //debugger;
+        var name = $('#Name').val();
+        var type = $('#Type').val();
+        var value = $('#Value').val();
+        var isActive = $('#IsActive').val();
+        var applicationName = $('#ApplicationName').val();
+        var _data = {
+            Name: name,
+            Type: type,
+            Value: value,
+            IsActive: isActive,
+            ApplicationName: applicationName
+        }
+        var _url = '@Url.Content("~/")' + "Configuration/AddNewValue";
+        $.ajax({
+            url: _url,
+            type : 'POST',
+            data: JSON.stringify(_data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                return location.reload();
+            }
+        });
+    }
+</script>
